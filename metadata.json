@@ -1,0 +1,5 @@
+{
+  "name": "Urban Zen Showcase CMS",
+  "description": "A showcase website for Urban Zen Pte. Ltd. with a built-in Content Management System to dynamically add new projects to the photo gallery using AI-powered descriptions.",
+  "requestFramePermissions": []
+}
