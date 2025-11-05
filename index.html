@@ -29,9 +29,19 @@
   }
 }
 </script>
+<!-- Add Babel Standalone for in-browser TSX/JSX transformation -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
   <body class="bg-gray-50 text-gray-800 font-sans">
     <div id="root"></div>
-    <script type="module" src="./index.js"></script>
+    <!-- 
+      Use text/babel to transpile TSX in the browser.
+      This resolves deployment issues on static hosts like GitHub Pages
+      that don't have a build step.
+      - `src` points to the original .tsx file, fixing the 404 error.
+      - `type="text/babel"` bypasses the browser's strict MIME type check.
+      - `data-presets` tells Babel how to transform the code.
+    -->
+    <script type="text/babel" data-presets="react,typescript" src="./index.tsx"></script>
   </body>
 </html>
