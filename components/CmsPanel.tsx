@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+
+import React, { useState, useCallback, useEffect } from 'react';
 import { Project } from '../types';
 import { generateProjectDescription } from '../services/geminiService';
 import { CloseIcon, SparklesIcon } from './Icons';
@@ -6,50 +7,113 @@ import { CloseIcon, SparklesIcon } from './Icons';
 interface CmsPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProject: (project: Omit<Project, 'id'>) => void;
+  onSaveProject: (project: Omit<Project, 'id'>, id?: string) => void;
+  projectToEdit: Project | null;
 }
 
-export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onAddProject }) => {
+export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProject, projectToEdit }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageUrlInput, setImageUrlInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingUrl, setIsFetchingUrl] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isEditing = !!projectToEdit;
 
   const resetForm = useCallback(() => {
     setTitle('');
     setDescription('');
-    setImage(null);
-    setImagePreview(null);
+    setImagePreviews([]);
+    setImageUrlInput('');
     setIsLoading(false);
+    setIsFetchingUrl(false);
     setError(null);
   }, []);
 
+  useEffect(() => {
+    if (isOpen) {
+      if (projectToEdit) {
+        setTitle(projectToEdit.title);
+        setDescription(projectToEdit.description);
+        setImagePreviews(projectToEdit.imageUrls);
+        setImageUrlInput('');
+      } else {
+        resetForm();
+      }
+    }
+  }, [projectToEdit, isOpen, resetForm]);
+
   const handleClose = () => {
-    resetForm();
     onClose();
   };
   
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              setImagePreviews(prev => [...prev, reader.result as string]);
+          };
+          reader.readAsDataURL(file);
+      })
+    }
+  };
+  
+  const handleRemoveImage = (indexToRemove: number) => {
+    setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleLoadFromUrl = async () => {
+    if (!imageUrlInput) {
+        setError('Please enter an image URL.');
+        return;
+    }
+
+    setIsFetchingUrl(true);
+    setError(null);
+    
+    try {
+        let url = imageUrlInput;
+        if (url.includes('github.com') && url.includes('/blob/')) {
+            url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+        }
+        
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image. Status: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        if (!blob.type.startsWith('image/')) {
+            throw new Error('The URL does not point to a valid image file.');
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreviews(prev => [...prev, reader.result as string]);
+            setImageUrlInput('');
+        };
+        reader.readAsDataURL(blob);
+
+    } catch (err: any) {
+        setError(`Error loading image from URL: ${err.message}. Please check the URL and ensure it's a direct link to an image.`);
+    } finally {
+        setIsFetchingUrl(false);
     }
   };
 
   const handleGenerateDescription = async () => {
-    if (!title || !imagePreview) {
-      setError('Please provide a project title and upload an image to generate a description.');
+    if (!title || !imagePreviews || imagePreviews.length === 0) {
+      setError('Please provide a project title and at least one image to generate a description.');
       return;
     }
 
-    const imageParts = imagePreview.match(/^data:(.+);base64,(.+)$/);
+    const firstImage = imagePreviews[0];
+    const imageParts = firstImage.match(/^data:(.+);base64,(.+)$/);
     if (!imageParts || imageParts.length !== 3) {
         setError('Invalid image format. Please upload a valid image file.');
         return;
@@ -63,7 +127,8 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onAddProjec
     try {
       const generatedDesc = await generateProjectDescription(title, imageBase64, mimeType);
       setDescription(generatedDesc);
-    } catch (err: any) {
+    } catch (err: any)
+{
       setError(err.message || 'An unknown error occurred.');
     } finally {
       setIsLoading(false);
@@ -72,11 +137,11 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onAddProjec
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !imagePreview) {
-      setError('All fields are required.');
+    if (!title || !description || !imagePreviews || imagePreviews.length === 0) {
+      setError('Title, description and at least one image are required.');
       return;
     }
-    onAddProject({ title, description, imageUrl: imagePreview });
+    onSaveProject({ title, description, imageUrls: imagePreviews }, projectToEdit?.id);
     handleClose();
   };
 
@@ -91,7 +156,7 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onAddProjec
       >
         <div className="flex flex-col h-full">
           <header className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-2xl font-bold text-gray-800">Add New Project</h2>
+            <h2 className="text-2xl font-bold text-gray-800">{isEditing ? 'Edit Project' : 'Add New Project'}</h2>
             <button onClick={handleClose} className="text-gray-500 hover:text-gray-800">
               <CloseIcon className="w-6 h-6" />
             </button>
@@ -110,29 +175,68 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onAddProjec
                   placeholder="e.g., Modern Scandinavian BTO"
                 />
               </div>
-
+              
               <div>
-                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">Project Image</label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                  <div className="space-y-1 text-center">
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Preview" className="mx-auto h-48 w-auto rounded-md object-contain" />
-                    ) : (
-                      <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                    <div className="flex text-sm text-gray-600">
-                      <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-teal-600 hover:text-teal-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-teal-500">
-                        <span>Upload a file</span>
-                        <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/*" onChange={handleImageChange}/>
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                  </div>
+                <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">Add Image from URL</label>
+                <div className="flex space-x-2">
+                    <input
+                        type="text"
+                        id="imageUrl"
+                        value={imageUrlInput}
+                        onChange={(e) => setImageUrlInput(e.target.value)}
+                        className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
+                        placeholder="https://.../image.png"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleLoadFromUrl}
+                        disabled={isFetchingUrl}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400"
+                    >
+                        {isFetchingUrl ? 'Adding...' : 'Add'}
+                    </button>
                 </div>
               </div>
+
+              <div className="relative flex items-center">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="flex-shrink mx-4 text-sm text-gray-500">OR</span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+              
+              <div>
+                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">Upload from Device</label>
+                <div className="mt-1">
+                      <label htmlFor="file-upload" className="relative w-full flex justify-center px-6 py-4 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-teal-500 bg-gray-50">
+                        <div className="space-y-1 text-center">
+                            <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            <span className="text-sm text-teal-600 font-medium">Click to upload file(s)</span>
+                            <input id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/*" onChange={handleImageChange} multiple/>
+                        </div>
+                      </label>
+                </div>
+              </div>
+
+              {imagePreviews.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Image Previews</label>
+                  <div className="grid grid-cols-3 gap-4">
+                    {imagePreviews.map((src, index) => (
+                      <div key={index} className="relative group">
+                        <img src={src} alt={`Preview ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
+                        <button 
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Remove image"
+                        >
+                          <CloseIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -148,13 +252,14 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onAddProjec
                   <button
                     type="button"
                     onClick={handleGenerateDescription}
-                    disabled={isLoading || !title || !imagePreview}
+                    disabled={isLoading || !title || !imagePreviews || imagePreviews.length === 0}
                     className="absolute bottom-2 right-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     <SparklesIcon className={`-ml-0.5 mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}/>
                     {isLoading ? 'Generating...' : 'Generate with AI'}
                   </button>
                 </div>
+                <p className="mt-2 text-xs text-gray-500">AI generation will be based on the first image in the gallery.</p>
               </div>
 
               {error && <p className="text-sm text-red-600">{error}</p>}
@@ -162,13 +267,13 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onAddProjec
           </form>
 
           <footer className="p-6 border-t bg-gray-50">
-            <p className="text-xs text-gray-500 text-center mb-4">Note: Projects added are stored only for this session and will be lost on page reload.</p>
+            <p className="text-xs text-gray-500 text-center mb-4">Note: Projects are stored for this session. In a live app, new images would be uploaded to a secure backend.</p>
             <button
               type="submit"
               onClick={handleSubmit}
               className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-md transition-colors"
             >
-              Add Project to Showcase
+              {isEditing ? 'Save Changes' : 'Add Project to Showcase'}
             </button>
           </footer>
         </div>

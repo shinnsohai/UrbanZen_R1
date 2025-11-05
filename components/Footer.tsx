@@ -2,7 +2,11 @@
 import React from 'react';
 import { BuildingIcon } from './Icons';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onNavigateToAdmin: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
   return (
     <footer id="contact" className="bg-gray-800 text-white">
       <div className="container mx-auto px-6 py-12">
@@ -20,6 +24,11 @@ export const Footer: React.FC = () => {
               <ul className="text-gray-400 space-y-2">
                 <li><a href="#about" className="hover:text-white">About Us</a></li>
                 <li><a href="#showcase" className="hover:text-white">Our Work</a></li>
+                <li>
+                  <button onClick={onNavigateToAdmin} className="hover:text-white text-left">
+                    Admin Login
+                  </button>
+                </li>
               </ul>
             </div>
             <div>

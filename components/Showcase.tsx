@@ -8,7 +8,9 @@ interface ShowcaseProps {
 
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => (
   <div className="group overflow-hidden rounded-lg shadow-lg bg-white transform transition-transform duration-300 hover:-translate-y-2">
-    <img src={project.imageUrl} alt={project.title} className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105" />
+    {project.imageUrls && project.imageUrls.length > 0 && (
+      <img src={project.imageUrls[0]} alt={project.title} className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105" />
+    )}
     <div className="p-6">
       <h3 className="text-xl font-bold text-gray-800 mb-2">{project.title}</h3>
       <p className="text-gray-600 leading-relaxed">{project.description}</p>
