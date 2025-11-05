@@ -1,18 +1,37 @@
-
-import React, { useState, useCallback } from 'react';
-import { Project } from '../types';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Project, HeroData } from '../types';
 import { CmsPanel } from './CmsPanel';
 import { PlusIcon } from './Icons';
 
 interface AdminPageProps {
   projects: Project[];
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
+  heroData: HeroData;
+  setHeroData: React.Dispatch<React.SetStateAction<HeroData>>;
   onLogout: () => void;
 }
 
-const AdminPage: React.FC<AdminPageProps> = ({ projects, setProjects, onLogout }) => {
+const AdminPage: React.FC<AdminPageProps> = ({ projects, setProjects, heroData, setHeroData, onLogout }) => {
   const [isCmsOpen, setIsCmsOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
+
+  const [localHeroData, setLocalHeroData] = useState<HeroData>(heroData);
+
+  useEffect(() => {
+    setLocalHeroData(heroData);
+  }, [heroData]);
+
+  const handleHeroDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setLocalHeroData(prev => ({...prev, [name]: value}));
+  };
+  
+  const handleSaveHeroData = (e: React.FormEvent) => {
+    e.preventDefault();
+    setHeroData(localHeroData);
+    // In a real app, you might show a success toast here.
+    alert('Hero section updated!');
+  };
 
   const handleAddProjectClick = () => {
     setProjectToEdit(null);
@@ -39,7 +58,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ projects, setProjects, onLogout }
     } else {
       // Adding new project
       setProjects(prevProjects => [
-        { ...projectData, id: new Date().toISOString() },
+        { ...projectData, id: new Date().toISOString() } as Project,
         ...prevProjects,
       ]);
     }
@@ -61,6 +80,53 @@ const AdminPage: React.FC<AdminPageProps> = ({ projects, setProjects, onLogout }
         </div>
       </header>
       <main className="container mx-auto px-6 py-8">
+        <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-4">Hero Section Settings</h2>
+            <form onSubmit={handleSaveHeroData} className="bg-white shadow rounded-lg p-6 space-y-4">
+                 <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Hero Title</label>
+                    <input
+                      type="text"
+                      id="title"
+                      name="title"
+                      value={localHeroData.title}
+                      onChange={handleHeroDataChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="subtitle" className="block text-sm font-medium text-gray-700 mb-1">Hero Subtitle</label>
+                    <textarea
+                      id="subtitle"
+                      name="subtitle"
+                      rows={3}
+                      value={localHeroData.subtitle}
+                      onChange={handleHeroDataChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">Background Image URL</label>
+                    <input
+                      type="text"
+                      id="imageUrl"
+                      name="imageUrl"
+                      value={localHeroData.imageUrl}
+                      onChange={handleHeroDataChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
+                    />
+                </div>
+                <div className="text-right">
+                    <button
+                      type="submit"
+                      className="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-md shadow-sm"
+                    >
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+      
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold">Projects</h2>
           <button
@@ -77,7 +143,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ projects, setProjects, onLogout }
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">House Type</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                 <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
@@ -90,9 +157,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ projects, setProjects, onLogout }
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{project.title}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-sm">
-                    <p className="truncate w-full">{project.description}</p>
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{project.houseType}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{project.location}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => handleEditProjectClick(project)} className="text-teal-600 hover:text-teal-900 mr-4">Edit</button>
                     <button onClick={() => handleDeleteProject(project.id)} className="text-red-600 hover:text-red-900">Delete</button>

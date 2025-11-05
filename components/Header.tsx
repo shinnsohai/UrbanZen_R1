@@ -20,7 +20,7 @@ export const Header: React.FC = () => {
         <nav className="hidden md:flex space-x-8">
           <button onClick={() => scrollToSection('about')} className="text-gray-600 hover:text-teal-600 transition-colors">About Us</button>
           <button onClick={() => scrollToSection('showcase')} className="text-gray-600 hover:text-teal-600 transition-colors">Our Work</button>
-          <button onClick={() => scrollToSection('contact')} className="text-gray-600 hover:text-teal-600 transition-colors">Contact</button>
+          <a href="https://forms.gle/nC1jjRQ196nKV2DG9" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-teal-600 transition-colors">Contact</a>
         </nav>
       </div>
     </header>

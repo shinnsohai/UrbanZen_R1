@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Project } from '../types';
 import { generateProjectDescription } from '../services/geminiService';
@@ -16,6 +15,14 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
   const [description, setDescription] = useState('');
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageUrlInput, setImageUrlInput] = useState('');
+  const [houseType, setHouseType] = useState<'HDB' | 'Condo' | 'Landed'>('HDB');
+  const [styleTags, setStyleTags] = useState('');
+  const [location, setLocation] = useState('');
+  const [budget, setBudget] = useState('');
+  const [supplier, setSupplier] = useState('');
+  const [contractor, setContractor] = useState('');
+  const [interiorDesigner, setInteriorDesigner] = useState('');
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +34,13 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
     setDescription('');
     setImagePreviews([]);
     setImageUrlInput('');
+    setHouseType('HDB');
+    setStyleTags('');
+    setLocation('');
+    setBudget('');
+    setSupplier('');
+    setContractor('');
+    setInteriorDesigner('');
     setIsLoading(false);
     setIsFetchingUrl(false);
     setError(null);
@@ -38,6 +52,13 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
         setTitle(projectToEdit.title);
         setDescription(projectToEdit.description);
         setImagePreviews(projectToEdit.imageUrls);
+        setHouseType(projectToEdit.houseType);
+        setStyleTags(projectToEdit.styleTags.join(', '));
+        setLocation(projectToEdit.location);
+        setBudget(projectToEdit.budget);
+        setSupplier(projectToEdit.supplier);
+        setContractor(projectToEdit.contractor);
+        setInteriorDesigner(projectToEdit.interiorDesigner);
         setImageUrlInput('');
       } else {
         resetForm();
@@ -141,7 +162,21 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
       setError('Title, description and at least one image are required.');
       return;
     }
-    onSaveProject({ title, description, imageUrls: imagePreviews }, projectToEdit?.id);
+    
+    const projectData = {
+      title,
+      description,
+      imageUrls: imagePreviews,
+      houseType,
+      styleTags: styleTags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      location,
+      budget,
+      supplier,
+      contractor,
+      interiorDesigner,
+    };
+
+    onSaveProject(projectData, projectToEdit?.id);
     handleClose();
   };
 
@@ -164,44 +199,70 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
 
           <form onSubmit={handleSubmit} className="flex-grow p-6 overflow-y-auto">
             <div className="space-y-6">
+              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Project Details</h3>
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Project Title</label>
                 <input
-                  type="text"
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
                   placeholder="e.g., Modern Scandinavian BTO"
                 />
               </div>
               
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                    <label htmlFor="houseType" className="block text-sm font-medium text-gray-700 mb-1">House Type</label>
+                    <select id="houseType" value={houseType} onChange={(e) => setHouseType(e.target.value as 'HDB' | 'Condo' | 'Landed')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 bg-white">
+                        <option>HDB</option>
+                        <option>Condo</option>
+                        <option>Landed</option>
+                    </select>
+                </div>
+                 <div>
+                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <input type="text" id="location" value={location} onChange={(e) => setLocation(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Tampines"/>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="styleTags" className="block text-sm font-medium text-gray-700 mb-1">Style Tags</label>
+                <input type="text" id="styleTags" value={styleTags} onChange={(e) => setStyleTags(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Minimalist, Scandinavian, Muji"/>
+                 <p className="mt-1 text-xs text-gray-500">Separate tags with a comma.</p>
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <div className="relative">
+                  <textarea id="description" rows={6} value={description} onChange={(e) => setDescription(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" placeholder="Describe the project..." />
+                  <button type="button" onClick={handleGenerateDescription} disabled={isLoading || !title || !imagePreviews || imagePreviews.length === 0}
+                    className="absolute bottom-2 right-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    <SparklesIcon className={`-ml-0.5 mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}/>
+                    {isLoading ? 'Generating...' : 'Generate with AI'}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-gray-500">AI generation will be based on the first image in the gallery.</p>
+              </div>
+
+              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Project Images</h3>
+              
               <div>
                 <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">Add Image from URL</label>
                 <div className="flex space-x-2">
-                    <input
-                        type="text"
-                        id="imageUrl"
-                        value={imageUrlInput}
-                        onChange={(e) => setImageUrlInput(e.target.value)}
-                        className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
-                        placeholder="https://.../image.png"
-                    />
-                    <button
-                        type="button"
-                        onClick={handleLoadFromUrl}
-                        disabled={isFetchingUrl}
-                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400"
-                    >
+                    <input type="text" id="imageUrl" value={imageUrlInput} onChange={(e) => setImageUrlInput(e.target.value)}
+                        className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" placeholder="https://.../image.png" />
+                    <button type="button" onClick={handleLoadFromUrl} disabled={isFetchingUrl}
+                        className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400">
                         {isFetchingUrl ? 'Adding...' : 'Add'}
                     </button>
                 </div>
               </div>
 
               <div className="relative flex items-center">
-                  <div className="flex-grow border-t border-gray-300"></div>
-                  <span className="flex-shrink mx-4 text-sm text-gray-500">OR</span>
-                  <div className="flex-grow border-t border-gray-300"></div>
+                  <div className="flex-grow border-t border-gray-300"></div><span className="flex-shrink mx-4 text-sm text-gray-500">OR</span><div className="flex-grow border-t border-gray-300"></div>
               </div>
               
               <div>
@@ -224,12 +285,7 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
                     {imagePreviews.map((src, index) => (
                       <div key={index} className="relative group">
                         <img src={src} alt={`Preview ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
-                        <button 
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          aria-label="Remove image"
-                        >
+                        <button type="button" onClick={() => handleRemoveImage(index)} className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Remove image">
                           <CloseIcon className="w-4 h-4" />
                         </button>
                       </div>
@@ -237,30 +293,28 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
                   </div>
                 </div>
               )}
-
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <div className="relative">
-                  <textarea
-                    id="description"
-                    rows={6}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500"
-                    placeholder="Describe the project..."
-                  />
-                  <button
-                    type="button"
-                    onClick={handleGenerateDescription}
-                    disabled={isLoading || !title || !imagePreviews || imagePreviews.length === 0}
-                    className="absolute bottom-2 right-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  >
-                    <SparklesIcon className={`-ml-0.5 mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}/>
-                    {isLoading ? 'Generating...' : 'Generate with AI'}
-                  </button>
+              
+              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Team & Budget</h3>
+               <div>
+                    <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1">Budget</label>
+                    <input type="text" id="budget" value={budget} onChange={(e) => setBudget(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., S$ 50,000 - S$ 70,000"/>
                 </div>
-                <p className="mt-2 text-xs text-gray-500">AI generation will be based on the first image in the gallery.</p>
-              </div>
+                 <div>
+                    <label htmlFor="supplier" className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                    <input type="text" id="supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Hafary Tiles"/>
+                </div>
+                 <div>
+                    <label htmlFor="contractor" className="block text-sm font-medium text-gray-700 mb-1">Contractor</label>
+                    <input type="text" id="contractor" value={contractor} onChange={(e) => setContractor(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Zenith Construction"/>
+                </div>
+                 <div>
+                    <label htmlFor="interiorDesigner" className="block text-sm font-medium text-gray-700 mb-1">Interior Designer</label>
+                    <input type="text" id="interiorDesigner" value={interiorDesigner} onChange={(e) => setInteriorDesigner(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Emily Tan"/>
+                </div>
 
               {error && <p className="text-sm text-red-600">{error}</p>}
             </div>

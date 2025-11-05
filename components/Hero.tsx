@@ -1,7 +1,12 @@
 
 import React from 'react';
+import { HeroData } from '../types';
 
-export const Hero: React.FC = () => {
+interface HeroProps {
+  heroData: HeroData;
+}
+
+export const Hero: React.FC<HeroProps> = ({ heroData }) => {
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
         if (element) {
@@ -10,12 +15,12 @@ export const Hero: React.FC = () => {
     };
 
   return (
-    <section className="relative h-[60vh] md:h-[80vh] bg-cover bg-center text-white" style={{backgroundImage: "url('https://picsum.photos/seed/hero/1920/1080')"}}>
+    <section className="relative h-[60vh] md:h-[80vh] bg-cover bg-center text-white" style={{backgroundImage: `url('${heroData.imageUrl}')`}}>
       <div className="absolute inset-0 bg-black bg-opacity-50" />
       <div className="relative container mx-auto px-6 h-full flex flex-col justify-center items-center text-center">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4">Your Sanctuary, Redefined.</h1>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4">{heroData.title}</h1>
         <p className="text-lg md:text-xl max-w-3xl mb-8">
-          A trusted digital ecosystem that seamlessly connects homeowners with verified design professionals in Singapore.
+          {heroData.subtitle}
         </p>
         <button 
           onClick={() => scrollToSection('showcase')}

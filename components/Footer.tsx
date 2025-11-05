@@ -41,7 +41,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToAdmin }) => {
              <div>
               <h2 className="mb-4 text-sm font-semibold text-gray-200 uppercase tracking-wider">Connect</h2>
               <ul className="text-gray-400 space-y-2">
-                <li><a href="#" className="hover:text-white">Contact Us</a></li>
+                <li><a href="https://forms.gle/nC1jjRQ196nKV2DG9" target="_blank" rel="noopener noreferrer" className="hover:text-white">Contact Us</a></li>
                 <li><a href="#" className="hover:text-white">Facebook</a></li>
                 <li><a href="#" className="hover:text-white">Instagram</a></li>
               </ul>

@@ -1,13 +1,13 @@
-
 import React, { useState, useCallback } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { About } from './components/About';
 import { Showcase } from './components/Showcase';
 import { Footer } from './components/Footer';
-import { Project } from './types';
+import { Project, HeroData } from './types';
 import AdminLogin from './components/AdminLogin';
 import AdminPage from './components/AdminPage';
+import { ProjectDetail } from './components/ProjectDetail';
 
 const App: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([
@@ -23,6 +23,13 @@ const App: React.FC = () => {
         'https://picsum.photos/seed/project1-5/800/600',
         'https://picsum.photos/seed/project1-6/800/600',
       ],
+      houseType: 'HDB',
+      styleTags: ['Minimalist', 'Scandinavian', 'Muji'],
+      location: 'Tampines',
+      budget: 'S$ 50,000 - S$ 70,000',
+      supplier: 'Hafary Tiles',
+      contractor: 'Zenith Construction',
+      interiorDesigner: 'Emily Tan',
     },
     {
       id: '2',
@@ -36,6 +43,13 @@ const App: React.FC = () => {
         'https://picsum.photos/seed/project2-5/800/600',
         'https://picsum.photos/seed/project2-6/800/600',
       ],
+      houseType: 'Condo',
+      styleTags: ['Modern', 'Luxury', 'Contemporary'],
+      location: 'Orchard Road',
+      budget: 'S$ 120,000 - S$ 150,000',
+      supplier: 'Formica Laminates',
+      contractor: 'Prestige Builders',
+      interiorDesigner: 'Jonathan Lee',
     },
     {
       id: '3',
@@ -49,11 +63,25 @@ const App: React.FC = () => {
         'https://picsum.photos/seed/project3-5/800/600',
         'https://picsum.photos/seed/project3-6/800/600',
       ],
+      houseType: 'Landed',
+      styleTags: ['Industrial', 'Loft', 'Vintage'],
+      location: 'Tiong Bahru',
+      budget: 'S$ 85,000 - S$ 100,000',
+      supplier: 'Edison Light Globes',
+      contractor: 'Urban Constructors',
+      interiorDesigner: 'Sarah Chen',
     },
   ]);
 
+  const [heroData, setHeroData] = useState<HeroData>({
+    title: 'Your Sanctuary, Redefined.',
+    subtitle: 'A trusted digital ecosystem that seamlessly connects homeowners with verified design professionals in Singapore.',
+    imageUrl: 'https://picsum.photos/seed/hero/1920/1080',
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [route, setRoute] = useState('home');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const handleLoginSuccess = useCallback(() => {
     setIsAuthenticated(true);
@@ -65,7 +93,16 @@ const App: React.FC = () => {
   }, []);
 
   const navigateToAdmin = useCallback(() => {
+    setSelectedProject(null); // Ensure no project detail is open when going to admin
     setRoute('admin');
+  }, []);
+  
+  const handleSelectProject = useCallback((project: Project) => {
+    setSelectedProject(project);
+  }, []);
+
+  const handleCloseProjectDetail = useCallback(() => {
+    setSelectedProject(null);
   }, []);
 
   if (route === 'admin') {
@@ -75,17 +112,23 @@ const App: React.FC = () => {
     return <AdminPage 
       projects={projects} 
       setProjects={setProjects}
+      heroData={heroData}
+      setHeroData={setHeroData}
       onLogout={handleLogout}
     />;
+  }
+
+  if (selectedProject) {
+    return <ProjectDetail project={selectedProject} onClose={handleCloseProjectDetail} />
   }
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
       <main>
-        <Hero />
+        <Hero heroData={heroData} />
         <About />
-        <Showcase projects={projects} />
+        <Showcase projects={projects} onProjectSelect={handleSelectProject} />
       </main>
       <Footer onNavigateToAdmin={navigateToAdmin} />
     </div>
