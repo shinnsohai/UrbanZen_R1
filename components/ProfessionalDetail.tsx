@@ -9,9 +9,19 @@ interface ProfessionalDetailProps {
   projects: Project[];
   onClose: () => void;
   onProjectSelect: (project: Project) => void;
+  companyName: string;
+  logoUrl: string;
+  contactUrl: string;
+  onNavigateToAdmin: () => void;
+  onNavigateToPrivacy: () => void;
+  onNavigateToTerms: () => void;
 }
 
-export const ProfessionalDetail: React.FC<ProfessionalDetailProps> = ({ professional, projects, onClose, onProjectSelect }) => {
+export const ProfessionalDetail: React.FC<ProfessionalDetailProps> = ({ 
+  professional, projects, onClose, onProjectSelect, 
+  companyName, logoUrl, contactUrl,
+  onNavigateToAdmin, onNavigateToPrivacy, onNavigateToTerms 
+}) => {
   
   const professionalProjects = projects.filter(p => {
     switch (professional.role) {
@@ -28,11 +38,11 @@ export const ProfessionalDetail: React.FC<ProfessionalDetailProps> = ({ professi
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header companyName={companyName} logoUrl={logoUrl} contactUrl={contactUrl} />
       <main className="container mx-auto px-6 py-12 md:py-20">
         <div className="mb-8">
           <button onClick={onClose} className="text-teal-600 hover:text-teal-800 font-medium">
-            &larr; Back to Project
+            &larr; Back
           </button>
         </div>
         
@@ -64,7 +74,7 @@ export const ProfessionalDetail: React.FC<ProfessionalDetailProps> = ({ professi
           </div>
         </div>
       </main>
-      <Footer onNavigateToAdmin={() => {}} />
+      <Footer companyName={companyName} contactUrl={contactUrl} onNavigateToAdmin={onNavigateToAdmin} onNavigateToPrivacy={onNavigateToPrivacy} onNavigateToTerms={onNavigateToTerms} />
     </div>
   );
 };

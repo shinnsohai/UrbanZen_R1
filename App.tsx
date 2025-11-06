@@ -1,16 +1,24 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { About } from './components/About';
 import { Showcase } from './components/Showcase';
 import { Footer } from './components/Footer';
-import { Project, HeroData, Professional } from './types';
+import { Project, HeroData, Professional, PageContent } from './types';
 import AdminLogin from './components/AdminLogin';
 import AdminPage from './components/AdminPage';
 import { ProjectDetail } from './components/ProjectDetail';
 import { ProfessionalDetail } from './components/ProfessionalDetail';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsAndConditions } from './components/TermsAndConditions';
+import { ProfessionalsShowcase } from './components/ProfessionalsShowcase';
+import { initialPrivacyPolicy, initialTermsAndConditions } from './initialData';
 
 const App: React.FC = () => {
+  const [companyName, setCompanyName] = useState('URBAN ZEN');
+  const [logoUrl, setLogoUrl] = useState(''); // Empty string means use default icon
+  const [contactUrl, setContactUrl] = useState('https://forms.gle/nC1jjRQ196nKV2DG9');
+  
   const [professionals, setProfessionals] = useState<Professional[]>([
     { id: 'sup1', name: 'Hafary Tiles', role: 'Supplier', bio: 'Hafary is a leading supplier of premium tiles, stones, and mosaics, offering a vast collection of high-quality surface materials for residential and commercial projects.', profileImageUrl: 'https://picsum.photos/seed/sup1/400/400' },
     { id: 'sup2', name: 'Formica Laminates', role: 'Supplier', bio: 'Formica Group is a global leader in the design, manufacture and distribution of innovative surfacing products for commercial and residential applications.', profileImageUrl: 'https://picsum.photos/seed/sup2/400/400' },
@@ -91,11 +99,57 @@ const App: React.FC = () => {
     subtitle: 'A trusted digital ecosystem that seamlessly connects homeowners with verified design professionals in Singapore.',
     imageUrl: 'https://picsum.photos/seed/hero/1920/1080',
   });
+  
+  const [privacyContent, setPrivacyContent] = useState<PageContent>(initialPrivacyPolicy);
+  const [termsContent, setTermsContent] = useState<PageContent>(initialTermsAndConditions);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [route, setRoute] = useState('home');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
+  
+  // State for project filtering
+  const [filter, setFilter] = useState<'All' | 'HDB' | 'Condo' | 'Landed'>('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // State for professional filtering
+  const [professionalFilter, setProfessionalFilter] = useState<'All' | 'Supplier' | 'Contractor' | 'Interior Designer'>('All');
+  const [professionalSearchTerm, setProfessionalSearchTerm] = useState('');
+
+  const filteredProjects = useMemo(() => {
+    return projects
+      .filter(project => {
+        if (filter === 'All') return true;
+        return project.houseType === filter;
+      })
+      .filter(project => {
+        if (!searchTerm) return true;
+        const lowercasedTerm = searchTerm.toLowerCase();
+        return (
+          project.title.toLowerCase().includes(lowercasedTerm) ||
+          project.description.toLowerCase().includes(lowercasedTerm) ||
+          project.location.toLowerCase().includes(lowercasedTerm) ||
+          project.styleTags.some(tag => tag.toLowerCase().includes(lowercasedTerm))
+        );
+      });
+  }, [projects, filter, searchTerm]);
+
+  const filteredProfessionals = useMemo(() => {
+    return professionals
+      .filter(professional => {
+        if (professionalFilter === 'All') return true;
+        return professional.role === professionalFilter;
+      })
+      .filter(professional => {
+        if (!professionalSearchTerm) return true;
+        const lowercasedTerm = professionalSearchTerm.toLowerCase();
+        return (
+          professional.name.toLowerCase().includes(lowercasedTerm) ||
+          professional.bio.toLowerCase().includes(lowercasedTerm) ||
+          professional.role.toLowerCase().includes(lowercasedTerm)
+        );
+      });
+  }, [professionals, professionalFilter, professionalSearchTerm]);
 
 
   const handleLoginSuccess = useCallback(() => {
@@ -108,9 +162,27 @@ const App: React.FC = () => {
   }, []);
 
   const navigateToAdmin = useCallback(() => {
-    setSelectedProject(null); // Ensure no project detail is open when going to admin
+    setSelectedProject(null);
     setSelectedProfessional(null);
     setRoute('admin');
+  }, []);
+
+  const navigateToPrivacy = useCallback(() => {
+    setSelectedProject(null);
+    setSelectedProfessional(null);
+    setRoute('privacy');
+  }, []);
+
+  const navigateToTerms = useCallback(() => {
+    setSelectedProject(null);
+    setSelectedProfessional(null);
+    setRoute('terms');
+  }, []);
+
+  const navigateToHome = useCallback(() => {
+    setRoute('home');
+    setSelectedProject(null);
+    setSelectedProfessional(null);
   }, []);
   
   const handleSelectProject = useCallback((project: Project) => {
@@ -140,8 +212,46 @@ const App: React.FC = () => {
       setProjects={setProjects}
       heroData={heroData}
       setHeroData={setHeroData}
+      companyName={companyName}
+      setCompanyName={setCompanyName}
+      logoUrl={logoUrl}
+      setLogoUrl={setLogoUrl}
+      contactUrl={contactUrl}
+      setContactUrl={setContactUrl}
+      professionals={professionals}
+      setProfessionals={setProfessionals}
+      privacyContent={privacyContent}
+      setPrivacyContent={setPrivacyContent}
+      termsContent={termsContent}
+      setTermsContent={setTermsContent}
       onLogout={handleLogout}
     />;
+  }
+
+  if (route === 'privacy') {
+    return <PrivacyPolicy 
+      content={privacyContent}
+      onBackToHome={navigateToHome}
+      companyName={companyName}
+      logoUrl={logoUrl}
+      contactUrl={contactUrl}
+      onNavigateToAdmin={navigateToAdmin}
+      onNavigateToPrivacy={navigateToPrivacy}
+      onNavigateToTerms={navigateToTerms}
+    />
+  }
+
+  if (route === 'terms') {
+    return <TermsAndConditions
+      content={termsContent}
+      onBackToHome={navigateToHome}
+      companyName={companyName}
+      logoUrl={logoUrl}
+      contactUrl={contactUrl}
+      onNavigateToAdmin={navigateToAdmin}
+      onNavigateToPrivacy={navigateToPrivacy}
+      onNavigateToTerms={navigateToTerms}
+    />
   }
   
   if (selectedProfessional) {
@@ -150,6 +260,12 @@ const App: React.FC = () => {
       projects={projects}
       onClose={handleCloseProfessionalDetail}
       onProjectSelect={handleSelectProject}
+      companyName={companyName}
+      logoUrl={logoUrl}
+      contactUrl={contactUrl}
+      onNavigateToAdmin={navigateToAdmin}
+      onNavigateToPrivacy={navigateToPrivacy}
+      onNavigateToTerms={navigateToTerms}
     />
   }
 
@@ -159,18 +275,39 @@ const App: React.FC = () => {
       professionals={professionals}
       onClose={handleCloseProjectDetail} 
       onSelectProfessional={handleSelectProfessional}
+      companyName={companyName}
+      logoUrl={logoUrl}
+      contactUrl={contactUrl}
+      onNavigateToAdmin={navigateToAdmin}
+      onNavigateToPrivacy={navigateToPrivacy}
+      onNavigateToTerms={navigateToTerms}
     />
   }
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <Header companyName={companyName} logoUrl={logoUrl} contactUrl={contactUrl} />
       <main>
         <Hero heroData={heroData} />
         <About />
-        <Showcase projects={projects} onProjectSelect={handleSelectProject} />
+        <ProfessionalsShowcase 
+          professionals={filteredProfessionals} 
+          onSelectProfessional={handleSelectProfessional}
+          filter={professionalFilter}
+          onFilterChange={setProfessionalFilter}
+          searchTerm={professionalSearchTerm}
+          onSearchChange={setProfessionalSearchTerm}
+        />
+        <Showcase 
+          projects={filteredProjects} 
+          onProjectSelect={handleSelectProject}
+          filter={filter}
+          onFilterChange={setFilter}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
       </main>
-      <Footer onNavigateToAdmin={navigateToAdmin} />
+      <Footer companyName={companyName} contactUrl={contactUrl} onNavigateToAdmin={navigateToAdmin} onNavigateToPrivacy={navigateToPrivacy} onNavigateToTerms={navigateToTerms} />
     </div>
   );
 };

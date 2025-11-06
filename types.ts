@@ -25,3 +25,14 @@ export interface HeroData {
   subtitle: string;
   imageUrl: string;
 }
+
+export interface ContentSection {
+  title: string;
+  body: string;
+}
+
+export interface PageContent {
+  title: string;
+  lastUpdated: string;
+  content: ContentSection[];
+}

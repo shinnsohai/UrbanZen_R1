@@ -8,6 +8,12 @@ interface ProjectDetailProps {
   professionals: Professional[];
   onClose: () => void;
   onSelectProfessional: (professional: Professional) => void;
+  companyName: string;
+  logoUrl: string;
+  contactUrl: string;
+  onNavigateToAdmin: () => void;
+  onNavigateToPrivacy: () => void;
+  onNavigateToTerms: () => void;
 }
 
 interface DetailItemProps {
@@ -36,7 +42,11 @@ const DetailItem: React.FC<DetailItemProps> = ({ label, value, professional, onS
   </div>
 );
 
-export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, professionals, onClose, onSelectProfessional }) => {
+export const ProjectDetail: React.FC<ProjectDetailProps> = ({ 
+  project, professionals, onClose, onSelectProfessional, 
+  companyName, logoUrl, contactUrl,
+  onNavigateToAdmin, onNavigateToPrivacy, onNavigateToTerms 
+}) => {
   const [activeImage, setActiveImage] = useState(project.imageUrls[0]);
 
   const supplier = professionals.find(p => p.id === project.supplierId);
@@ -45,7 +55,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, professio
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <Header companyName={companyName} logoUrl={logoUrl} contactUrl={contactUrl} />
       <main className="container mx-auto px-6 py-12 md:py-20">
         <div className="mb-8">
           <button onClick={onClose} className="text-teal-600 hover:text-teal-800 font-medium">
@@ -82,7 +92,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, professio
           </div>
         </div>
       </main>
-      <Footer onNavigateToAdmin={() => { /* In detail view, this might navigate home first or do nothing */ }} />
+      <Footer companyName={companyName} contactUrl={contactUrl} onNavigateToAdmin={onNavigateToAdmin} onNavigateToPrivacy={onNavigateToPrivacy} onNavigateToTerms={onNavigateToTerms} />
     </div>
   );
 };
