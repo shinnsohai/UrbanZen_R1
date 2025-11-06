@@ -18,6 +18,8 @@ const App: React.FC = () => {
   const [companyName, setCompanyName] = useState('URBAN ZEN');
   const [logoUrl, setLogoUrl] = useState(''); // Empty string means use default icon
   const [contactUrl, setContactUrl] = useState('https://forms.gle/nC1jjRQ196nKV2DG9');
+  const [facebookUrl, setFacebookUrl] = useState('#');
+  const [instagramUrl, setInstagramUrl] = useState('#');
   
   const [professionals, setProfessionals] = useState<Professional[]>([
     { id: 'sup1', name: 'Hafary Tiles', role: 'Supplier', bio: 'Hafary is a leading supplier of premium tiles, stones, and mosaics, offering a vast collection of high-quality surface materials for residential and commercial projects.', profileImageUrl: 'https://picsum.photos/seed/sup1/400/400' },
@@ -218,6 +220,10 @@ const App: React.FC = () => {
       setLogoUrl={setLogoUrl}
       contactUrl={contactUrl}
       setContactUrl={setContactUrl}
+      facebookUrl={facebookUrl}
+      setFacebookUrl={setFacebookUrl}
+      instagramUrl={instagramUrl}
+      setInstagramUrl={setInstagramUrl}
       professionals={professionals}
       setProfessionals={setProfessionals}
       privacyContent={privacyContent}
@@ -235,6 +241,8 @@ const App: React.FC = () => {
       companyName={companyName}
       logoUrl={logoUrl}
       contactUrl={contactUrl}
+      facebookUrl={facebookUrl}
+      instagramUrl={instagramUrl}
       onNavigateToAdmin={navigateToAdmin}
       onNavigateToPrivacy={navigateToPrivacy}
       onNavigateToTerms={navigateToTerms}
@@ -248,6 +256,8 @@ const App: React.FC = () => {
       companyName={companyName}
       logoUrl={logoUrl}
       contactUrl={contactUrl}
+      facebookUrl={facebookUrl}
+      instagramUrl={instagramUrl}
       onNavigateToAdmin={navigateToAdmin}
       onNavigateToPrivacy={navigateToPrivacy}
       onNavigateToTerms={navigateToTerms}
@@ -263,6 +273,8 @@ const App: React.FC = () => {
       companyName={companyName}
       logoUrl={logoUrl}
       contactUrl={contactUrl}
+      facebookUrl={facebookUrl}
+      instagramUrl={instagramUrl}
       onNavigateToAdmin={navigateToAdmin}
       onNavigateToPrivacy={navigateToPrivacy}
       onNavigateToTerms={navigateToTerms}
@@ -278,6 +290,8 @@ const App: React.FC = () => {
       companyName={companyName}
       logoUrl={logoUrl}
       contactUrl={contactUrl}
+      facebookUrl={facebookUrl}
+      instagramUrl={instagramUrl}
       onNavigateToAdmin={navigateToAdmin}
       onNavigateToPrivacy={navigateToPrivacy}
       onNavigateToTerms={navigateToTerms}
@@ -307,7 +321,15 @@ const App: React.FC = () => {
           onSearchChange={setSearchTerm}
         />
       </main>
-      <Footer companyName={companyName} contactUrl={contactUrl} onNavigateToAdmin={navigateToAdmin} onNavigateToPrivacy={navigateToPrivacy} onNavigateToTerms={navigateToTerms} />
+      <Footer 
+        companyName={companyName} 
+        contactUrl={contactUrl} 
+        facebookUrl={facebookUrl}
+        instagramUrl={instagramUrl}
+        onNavigateToAdmin={navigateToAdmin} 
+        onNavigateToPrivacy={navigateToPrivacy} 
+        onNavigateToTerms={navigateToTerms} 
+      />
     </div>
   );
 };

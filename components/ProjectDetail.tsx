@@ -11,6 +11,8 @@ interface ProjectDetailProps {
   companyName: string;
   logoUrl: string;
   contactUrl: string;
+  facebookUrl: string;
+  instagramUrl: string;
   onNavigateToAdmin: () => void;
   onNavigateToPrivacy: () => void;
   onNavigateToTerms: () => void;
@@ -44,7 +46,7 @@ const DetailItem: React.FC<DetailItemProps> = ({ label, value, professional, onS
 
 export const ProjectDetail: React.FC<ProjectDetailProps> = ({ 
   project, professionals, onClose, onSelectProfessional, 
-  companyName, logoUrl, contactUrl,
+  companyName, logoUrl, contactUrl, facebookUrl, instagramUrl,
   onNavigateToAdmin, onNavigateToPrivacy, onNavigateToTerms 
 }) => {
   const [activeImage, setActiveImage] = useState(project.imageUrls[0]);
@@ -92,7 +94,15 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           </div>
         </div>
       </main>
-      <Footer companyName={companyName} contactUrl={contactUrl} onNavigateToAdmin={onNavigateToAdmin} onNavigateToPrivacy={onNavigateToPrivacy} onNavigateToTerms={onNavigateToTerms} />
+      <Footer 
+        companyName={companyName} 
+        contactUrl={contactUrl} 
+        facebookUrl={facebookUrl} 
+        instagramUrl={instagramUrl} 
+        onNavigateToAdmin={onNavigateToAdmin} 
+        onNavigateToPrivacy={onNavigateToPrivacy} 
+        onNavigateToTerms={onNavigateToTerms} 
+      />
     </div>
   );
 };

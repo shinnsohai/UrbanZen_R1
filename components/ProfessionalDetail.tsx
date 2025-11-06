@@ -12,6 +12,8 @@ interface ProfessionalDetailProps {
   companyName: string;
   logoUrl: string;
   contactUrl: string;
+  facebookUrl: string;
+  instagramUrl: string;
   onNavigateToAdmin: () => void;
   onNavigateToPrivacy: () => void;
   onNavigateToTerms: () => void;
@@ -19,7 +21,7 @@ interface ProfessionalDetailProps {
 
 export const ProfessionalDetail: React.FC<ProfessionalDetailProps> = ({ 
   professional, projects, onClose, onProjectSelect, 
-  companyName, logoUrl, contactUrl,
+  companyName, logoUrl, contactUrl, facebookUrl, instagramUrl,
   onNavigateToAdmin, onNavigateToPrivacy, onNavigateToTerms 
 }) => {
   
@@ -74,7 +76,15 @@ export const ProfessionalDetail: React.FC<ProfessionalDetailProps> = ({
           </div>
         </div>
       </main>
-      <Footer companyName={companyName} contactUrl={contactUrl} onNavigateToAdmin={onNavigateToAdmin} onNavigateToPrivacy={onNavigateToPrivacy} onNavigateToTerms={onNavigateToTerms} />
+      <Footer 
+        companyName={companyName} 
+        contactUrl={contactUrl}
+        facebookUrl={facebookUrl}
+        instagramUrl={instagramUrl}
+        onNavigateToAdmin={onNavigateToAdmin} 
+        onNavigateToPrivacy={onNavigateToPrivacy} 
+        onNavigateToTerms={onNavigateToTerms} 
+      />
     </div>
   );
 };

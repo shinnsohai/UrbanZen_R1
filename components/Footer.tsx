@@ -4,12 +4,14 @@ import { BuildingIcon } from './Icons';
 interface FooterProps {
   companyName: string;
   contactUrl: string;
+  facebookUrl: string;
+  instagramUrl: string;
   onNavigateToAdmin: () => void;
   onNavigateToPrivacy: () => void;
   onNavigateToTerms: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ companyName, contactUrl, onNavigateToAdmin, onNavigateToPrivacy, onNavigateToTerms }) => {
+export const Footer: React.FC<FooterProps> = ({ companyName, contactUrl, facebookUrl, instagramUrl, onNavigateToAdmin, onNavigateToPrivacy, onNavigateToTerms }) => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -52,8 +54,8 @@ export const Footer: React.FC<FooterProps> = ({ companyName, contactUrl, onNavig
               <h2 className="mb-4 text-sm font-semibold text-gray-200 uppercase tracking-wider">Connect</h2>
               <ul className="text-gray-400 space-y-2">
                 <li><a href={contactUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white">Facebook</a></li>
-                <li><a href="#" className="hover:text-white">Instagram</a></li>
+                <li><a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white">Facebook</a></li>
+                <li><a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white">Instagram</a></li>
               </ul>
             </div>
           </div>

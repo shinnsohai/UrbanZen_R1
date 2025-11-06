@@ -9,13 +9,15 @@ interface TermsAndConditionsProps {
   companyName: string;
   logoUrl: string;
   contactUrl: string;
+  facebookUrl: string;
+  instagramUrl: string;
   onNavigateToAdmin: () => void;
   onNavigateToPrivacy: () => void;
   onNavigateToTerms: () => void;
 }
 
 export const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({ 
-  content, onBackToHome, companyName, logoUrl, contactUrl, 
+  content, onBackToHome, companyName, logoUrl, contactUrl, facebookUrl, instagramUrl,
   onNavigateToAdmin, onNavigateToPrivacy, onNavigateToTerms 
 }) => {
   return (
@@ -48,6 +50,8 @@ export const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
       <Footer 
         companyName={companyName} 
         contactUrl={contactUrl} 
+        facebookUrl={facebookUrl}
+        instagramUrl={instagramUrl}
         onNavigateToAdmin={onNavigateToAdmin} 
         onNavigateToPrivacy={onNavigateToPrivacy} 
         onNavigateToTerms={onNavigateToTerms} 
