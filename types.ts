@@ -1,3 +1,11 @@
+export interface Professional {
+  id: string;
+  name: string;
+  role: 'Supplier' | 'Contractor' | 'Interior Designer';
+  bio: string;
+  profileImageUrl: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -7,9 +15,9 @@ export interface Project {
   styleTags: string[];
   location: string;
   budget: string;
-  supplier: string;
-  contractor: string;
-  interiorDesigner: string;
+  supplierId: string;
+  contractorId: string;
+  interiorDesignerId: string;
 }
 
 export interface HeroData {

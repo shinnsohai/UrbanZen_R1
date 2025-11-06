@@ -17,10 +17,10 @@ export const Header: React.FC = () => {
           <BuildingIcon className="w-8 h-8 text-teal-600" />
           <span className="text-2xl font-bold text-gray-800 tracking-tight">URBAN ZEN</span>
         </div>
-        <nav className="hidden md:flex space-x-8">
+        <nav className="hidden md:flex space-x-8 items-center">
           <button onClick={() => scrollToSection('about')} className="text-gray-600 hover:text-teal-600 transition-colors">About Us</button>
           <button onClick={() => scrollToSection('showcase')} className="text-gray-600 hover:text-teal-600 transition-colors">Our Work</button>
-          <a href="https://forms.gle/nC1jjRQ196nKV2DG9" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-teal-600 transition-colors">Contact</a>
+          <a href="https://forms.gle/nC1jjRQ196nKV2DG9" target="_blank" rel="noopener noreferrer" className="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-md transition-colors shadow-sm">Contact</a>
         </nav>
       </div>
     </header>

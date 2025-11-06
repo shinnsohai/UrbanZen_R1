@@ -6,7 +6,7 @@ import { CloseIcon, SparklesIcon } from './Icons';
 interface CmsPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  onSaveProject: (project: Omit<Project, 'id'>, id?: string) => void;
+  onSaveProject: (project: Omit<Project, 'id' | 'supplierId' | 'contractorId' | 'interiorDesignerId'> & { supplier: string, contractor: string, interiorDesigner: string }, id?: string) => void;
   projectToEdit: Project | null;
 }
 
@@ -56,9 +56,10 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
         setStyleTags(projectToEdit.styleTags.join(', '));
         setLocation(projectToEdit.location);
         setBudget(projectToEdit.budget);
-        setSupplier(projectToEdit.supplier);
-        setContractor(projectToEdit.contractor);
-        setInteriorDesigner(projectToEdit.interiorDesigner);
+        // In a real CMS, you'd fetch the names from the IDs
+        setSupplier(projectToEdit.supplierId);
+        setContractor(projectToEdit.contractorId);
+        setInteriorDesigner(projectToEdit.interiorDesignerId);
         setImageUrlInput('');
       } else {
         resetForm();
@@ -163,6 +164,8 @@ export const CmsPanel: React.FC<CmsPanelProps> = ({ isOpen, onClose, onSaveProje
       return;
     }
     
+    // In a real CMS, you'd likely use a dropdown to select professionals by ID.
+    // For this prototype, we'll pass the text and handle ID creation/lookup in the parent.
     const projectData = {
       title,
       description,

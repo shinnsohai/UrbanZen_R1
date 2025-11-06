@@ -49,22 +49,33 @@ const AdminPage: React.FC<AdminPageProps> = ({ projects, setProjects, heroData, 
     }
   };
 
-  const handleSaveProject = useCallback((projectData: Omit<Project, 'id'>, id?: string) => {
+  const handleSaveProject = useCallback((projectData: Omit<Project, 'id' | 'supplierId' | 'contractorId' | 'interiorDesignerId'> & { supplier: string, contractor: string, interiorDesigner: string }, id?: string) => {
+    const { supplier, contractor, interiorDesigner, ...restOfProjectData } = projectData;
+
+    // In a real CMS, you would have a more robust way of linking professionals.
+    // Here we're just creating dummy IDs based on the name for prototype purposes.
+    const professionalIds = {
+      supplierId: supplier.toLowerCase().replace(/\s/g, ''),
+      contractorId: contractor.toLowerCase().replace(/\s/g, ''),
+      interiorDesignerId: interiorDesigner.toLowerCase().replace(/\s/g, ''),
+    }
+
     if (id) {
       // Editing existing project
       setProjects(prevProjects => 
-        prevProjects.map(p => p.id === id ? { ...projectData, id } : p)
+        prevProjects.map(p => p.id === id ? { ...restOfProjectData, ...professionalIds, id } : p)
       );
     } else {
       // Adding new project
       setProjects(prevProjects => [
-        { ...projectData, id: new Date().toISOString() } as Project,
+        { ...restOfProjectData, ...professionalIds, id: new Date().toISOString() } as Project,
         ...prevProjects,
       ]);
     }
     setIsCmsOpen(false);
     setProjectToEdit(null);
   }, [setProjects]);
+
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
-import { Project } from '../types';
+import { Project, Professional } from '../types';
 import { Header } from './Header';
 import { Footer } from './Footer';
 
 interface ProjectDetailProps {
   project: Project;
+  professionals: Professional[];
   onClose: () => void;
+  onSelectProfessional: (professional: Professional) => void;
 }
 
-const DetailItem: React.FC<{ label: string; value: string | string[] }> = ({ label, value }) => (
+interface DetailItemProps {
+  label: string;
+  value?: string | string[];
+  professional?: Professional;
+  onSelectProfessional?: (professional: Professional) => void;
+}
+
+const DetailItem: React.FC<DetailItemProps> = ({ label, value, professional, onSelectProfessional }) => (
   <div>
     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{label}</h3>
-    {Array.isArray(value) ? (
+    {professional && onSelectProfessional ? (
+       <button onClick={() => onSelectProfessional(professional)} className="text-lg text-teal-600 hover:text-teal-800 hover:underline mt-1 text-left">
+         {professional.name}
+       </button>
+    ) : Array.isArray(value) ? (
       <div className="flex flex-wrap gap-2 mt-2">
         {value.map(tag => (
           <span key={tag} className="bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-1 rounded-full">{tag}</span>
@@ -23,8 +36,12 @@ const DetailItem: React.FC<{ label: string; value: string | string[] }> = ({ lab
   </div>
 );
 
-export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose }) => {
+export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, professionals, onClose, onSelectProfessional }) => {
   const [activeImage, setActiveImage] = useState(project.imageUrls[0]);
+
+  const supplier = professionals.find(p => p.id === project.supplierId);
+  const contractor = professionals.find(p => p.id === project.contractorId);
+  const interiorDesigner = professionals.find(p => p.id === project.interiorDesignerId);
 
   return (
     <div className="min-h-screen bg-white">
@@ -58,9 +75,9 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose }
                 <DetailItem label="Location" value={project.location} />
                 <DetailItem label="Style" value={project.styleTags} />
                 <DetailItem label="Budget" value={project.budget} />
-                <DetailItem label="Supplier" value={project.supplier} />
-                <DetailItem label="Contractor" value={project.contractor} />
-                <DetailItem label="Interior Designer" value={project.interiorDesigner} />
+                {supplier && <DetailItem label="Supplier" professional={supplier} onSelectProfessional={onSelectProfessional} />}
+                {contractor && <DetailItem label="Contractor" professional={contractor} onSelectProfessional={onSelectProfessional} />}
+                {interiorDesigner && <DetailItem label="Interior Designer" professional={interiorDesigner} onSelectProfessional={onSelectProfessional} />}
             </div>
           </div>
         </div>
